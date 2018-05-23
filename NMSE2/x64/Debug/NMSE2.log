@@ -1,6 +1,0 @@
-﻿  NMSEHelper.cpp
-c:\users\ben spencer\source\repos\project1\nmse2\nmsehelper.cpp(1): warning C4005: '_CRT_SECURE_NO_WARNINGS': macro redefinition
-  c:\users\ben spencer\source\repos\project1\nmse2\nmsehelper.cpp(1): note: command-line arguments:  see previous definition of '_CRT_SECURE_NO_WARNINGS'
-  main.cpp
-  Generating Code...
-  NMSE2.vcxproj -> C:\Users\Ben Spencer\source\repos\Project1\x64\Debug\NMSE2.exe
