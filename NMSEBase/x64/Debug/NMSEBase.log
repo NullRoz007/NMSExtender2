@@ -1,0 +1,4 @@
+﻿  dllmain.cpp
+c:\users\ben spencer\source\repos\project1\nmsebase\dllmain.cpp(5): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+c:\users\ben spencer\source\repos\project1\nmsebase\dllmain.cpp(28): warning C4129: 'L': unrecognized character escape sequence
+  NMSEBase.vcxproj -> C:\Users\Ben Spencer\source\repos\Project1\x64\Debug\NMSEBase.dll
