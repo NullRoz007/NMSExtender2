@@ -2,10 +2,15 @@
 #include <string>
 #include <iostream>
 #include <windows.h>
+#include <vector>
 #include "INIReader.h"
 
+
+std::string GetRuntimePath(void);
+std::vector<std::string> ReadDirectory(const std::string, const std::vector<std::string>);
+
 using namespace std;
-struct ModDetails {
+struct Mod{
 	string modName;
 	string modAuthor;
 	string modLibrary;
@@ -17,5 +22,7 @@ public:
 	ModManager();
 	~ModManager();
 
-	ModDetails* GetMods(void);
+	HINSTANCE LoadMod(Mod mod);
+	void RunMod(HINSTANCE modDllHandle);
+	vector<Mod> GetMods();
 };
