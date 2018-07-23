@@ -46,14 +46,12 @@ BOOL __stdcall hwglSwapBuffers(_In_ HDC hDC) {
 	glRasterPos2f(10.0f, 50.0f);
 	glCallLists(strlen(str), GL_UNSIGNED_BYTE, str);
 
-	api.manager.loadedMods[0].glptr(hDC);
-
-	/*for (auto &m : api.manager.loadedMods) {
+	for (auto &m : api.manager.loadedMods) {
 		Mod mod = m;
 		if (mod.hasGLHook) {
 			mod.glptr(hDC);
 		}
-	}*/
+	}
 
 	wglMakeCurrent(hDC, oContext);
 	return owglSwapBuffers(hDC);
