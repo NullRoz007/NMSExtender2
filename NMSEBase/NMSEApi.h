@@ -1,36 +1,46 @@
 #pragma once
+#include <iostream>
+#include <vector>
 #include <windows.h>
+#include <functional>
 #include "AK.h"
+#include "MinHook.h"
+#include "GL/glut.h";
+#include "ModManager.h";
 
-uintptr_t modBase = (uintptr_t)GetModuleHandle(NULL);
+using namespace std;
+
+extern uintptr_t modBase;
 
 typedef bool(__stdcall *_AK_SoundEngine_IsInitialized)();
-_AK_SoundEngine_IsInitialized AK_SoundEngine_IsInitialized = _AK_SoundEngine_IsInitialized(modBase + 0x11FF570);
+extern _AK_SoundEngine_IsInitialized AK_SoundEngine_IsInitialized;
 
-/*typedef unsigned __int64 (__stdcall *_AK_SoundEngine_Query_GetGameObjectFromPlayingId)(unsigned long);
-_AK_SoundEngine_Query_GetGameObjectFromPlayingId AK_SoundEngine_Query_GetGameObjectFromPlayingId = _AK_SoundEngine_Query_GetGameObjectFromPlayingId(modBase + 0x1206DB0);
-*/
+typedef void(__stdcall *_AK_SoundEngine_Term)();
+extern _AK_SoundEngine_Term AK_SoundEngine_Term;
 
-DWORD AK_SoundEngine_g_PlayingID_Addr  = (modBase + 0x1B647C0);
-unsigned long AK_SoundEngine_g_PlayingID = (unsigned long)AK_SoundEngine_g_PlayingID_Addr;
+typedef void(__stdcall * _AK_SoundEngine_MuteBackgroundMusic)(bool);
+extern _AK_SoundEngine_MuteBackgroundMusic AK_SoundEngine_MuteBackgroundMusic;
 
-bool HookFunction(void * fToHook, void * fToOverwrite, int len) {
-	if (len < 5) {
-		return false;
-	}
+extern unsigned long AK_SoundEngine_g_PlayingID;
 
-	DWORD curProtection;
-	VirtualProtect(fToHook, len, PAGE_EXECUTE_READWRITE, &curProtection);
-	
-	memset(fToHook, 0x90, len);
-	
-	DWORD relativeAddress = ((DWORD)fToOverwrite - (DWORD)fToHook) - 5;
+typedef BOOL(__stdcall *twglSwapBuffers) (_In_ HDC hDC);
 
-	*(BYTE*)fToHook = 0xE9;
-	*(DWORD*)((DWORD)fToHook + 1) = relativeAddress;
+extern vector<void(*) ()> glFuncs;
+extern bool hadFirstSwap;
 
-	DWORD temp;
-	VirtualProtect(fToHook, len, curProtection, &temp);
+extern char* console;
 
-	return true;
-}
+extern GLvoid initializeContext();
+extern BOOL __stdcall hwglSwapBuffers(_In_ HDC hDC);
+extern void StartNMSE(ModManager manager);
+
+
+
+class NMSEApi
+{
+public:
+	ModManager manager;
+	NMSEApi(ModManager manager);
+	~NMSEApi();
+	MH_STATUS HookNMSEFunction(const char* target, LPVOID original, LPVOID detour);
+};

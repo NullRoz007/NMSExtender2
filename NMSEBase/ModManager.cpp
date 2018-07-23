@@ -8,7 +8,14 @@
 #include "INIReader.h"
 
 using namespace std::experimental::filesystem;
-typedef void (__stdcall *ModuleStart) (void);
+
+
+wchar_t *convertCharArrayToLPCWSTR(const char* charArray)
+{
+	wchar_t* wString = new wchar_t[4096];
+	MultiByteToWideChar(CP_ACP, 0, charArray, -1, wString, 4096);
+	return wString;
+}
 
 string GetRuntimePath(void) {
 	char buf[MAX_PATH];
@@ -49,23 +56,31 @@ ModManager::~ModManager()
 }
 
 HINSTANCE ModManager::LoadMod(Mod mod) {
-	
+
 	string fullLibPath = GetRuntimePath() + "\\NMSE\\" + mod.modLibrary;
-	HINSTANCE dllHandle = LoadLibrary(fullLibPath.c_str());
+	HINSTANCE dllHandle = LoadLibraryA(fullLibPath.c_str());
+
+	if (mod.hasGLHook == 1) {
+		hWglSwapBuffers_t hwsb_ptr = (hWglSwapBuffers_t)GetProcAddress(dllHandle, "hWglSwapBuffers");
+		mod.glptr = hwsb_ptr;
+	}
+
+	loadedMods.push_back(mod);
+
 	if (!dllHandle) return NULL;
 	else return dllHandle;
 }
 
 void ModManager::RunMod(HINSTANCE modDllHandle) {
-	ModuleStart ModuleStartPtr = (ModuleStart)GetProcAddress(modDllHandle, "ModuleStart");
+	ModuleStart_t ModuleStartPtr = (ModuleStart_t)GetProcAddress(modDllHandle, "ModuleStart");
 	ModuleStartPtr();
 }
 
-vector<Mod> ModManager::GetMods()
+vector<Mod> ModManager::GetMods(bool log)
 {
 	vector<Mod> mods;
 	string MODS_PATH = GetRuntimePath() + "\\NMSE\\";
-	std::cout << "Fetching Mods from " << MODS_PATH << endl;
+	if(log) std::cout << "Fetching Mods from " << MODS_PATH << endl;
 
 	if (exists(MODS_PATH) && is_directory(MODS_PATH)) {
 		vector<string> files = ReadDirectory(MODS_PATH);
@@ -86,7 +101,8 @@ vector<Mod> ModManager::GetMods()
 				nmseModule.modName = fileReader.Get("ModData", "modName", "UNKNOWN");
 				nmseModule.modLibrary = fileReader.Get("ModData", "modLibrary", "UNKNOWN");
 				nmseModule.modAuthor = fileReader.Get("ModData", "modAuthor", "UNKNOWN");
-				cout << "Loading: "+ nmseModule.modName + " [" + nmseModule.modLibrary + "]";
+				nmseModule.hasGLHook = fileReader.GetInteger("ModData", "hasGLHook", 0);
+				if(log) cout << "Loading: "+ nmseModule.modName + " [" + nmseModule.modLibrary + "]";
 				mods.push_back(nmseModule);
 			}
 		}
